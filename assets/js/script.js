@@ -2,9 +2,18 @@ const url = "https://striveschool-api.herokuapp.com/books";
 const rowDiv = document.getElementById("rowDiv");
 const cartOl = document.getElementById("cartOl");
 let booksArray;
+let ol = document.querySelector("ol");
+let sessionBooks= JSON.parse(localStorage.getItem("book")) || [];
 
-const retrieveData = () => {
-    fetch(url)
+document.addEventListener("load", init())
+
+function init() {
+    retrieveData();
+    cartFunc2();
+}
+
+async function retrieveData(){
+    await fetch(url)
         .then((response) => {
             return response.json()
         })
@@ -17,8 +26,6 @@ const retrieveData = () => {
             console.log(error);
         })
 }
-
-retrieveData();
 
 function cards() {
     rowDiv.innerHTML = ""
@@ -34,31 +41,45 @@ function cards() {
          <a href="javascript:void(0)" class="btn btn-primary scarta">SCARTA</a>
          </div>
          </div>`;
-         
+
     };
     const scarta = document.querySelectorAll(".scarta");
-    for (let i=0; i< booksArray.length; i++){
-         scarta[i].addEventListener("click", function(){
+    for (let i = 0; i < booksArray.length; i++) {
+        scarta[i].addEventListener("click", function () {
             booksArray.splice(i, 1);
             cards()
-         });
+        });
     };
-    cartfunc()
+    cartFunc()
 }
 
-function cartfunc() {
+function cartFunc() {
     const compra = document.querySelectorAll(".compra");
-    for (let i=0; i< booksArray.length; i++){
-        compra[i].addEventListener("click", function(){
-            const li = document.createElement("li");
-            li.innerHTML = `${booksArray[i].title} ${booksArray[i].price}€`;
-            cartOl.appendChild(li);
-            const cartBtn = document.createElement("button");
-            cartBtn.innerHTML= "ciao";
-            li.appendChild(cartBtn);
-            cartBtn.addEventListener("click", function(){
-                li.style.display = "none";
-            });
-        })
-    }
+    for (let i = 0; i < booksArray.length; i++) {
+        compra[i].addEventListener("click", function () {
+            sessionBooks.push({
+                title: booksArray[i].title,
+                price: booksArray[i].price
+            }); 
+            cartFunc2();
+            localStorage.setItem("book", JSON.stringify(sessionBooks));
+        });
+    };
+}
+
+function cartFunc2() {
+    ol.innerText = "";
+    for (let i = 0; i < sessionBooks.length; i++) {
+        let li = document.createElement("li");
+        let btnCart = document.createElement("button");
+        li.innerText = `${sessionBooks[i].title}, ${sessionBooks[i].price}€`;
+        btnCart.innerHTML = "❌";
+        btnCart.addEventListener("click", function () {
+            sessionBooks.splice(i,1);
+            localStorage.setItem("book", JSON.stringify(sessionBooks));
+            cartFunc2();
+        });
+        li.appendChild(btnCart);
+        ol.appendChild(li);
+    };
 }
